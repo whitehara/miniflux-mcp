@@ -22,4 +22,9 @@ WORKDIR /root/
 
 COPY --from=builder /app/miniflux-mcp .
 
+# Default port for Streamable HTTP mode. Documentary only - actual listen
+# address is controlled by the MCP_HTTP_PORT environment variable at runtime.
+# When MCP_HTTP_PORT is unset, the server falls back to stdio mode.
+EXPOSE 3000
+
 CMD ["./miniflux-mcp"]
