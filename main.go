@@ -72,30 +72,13 @@ func (s *MinifluxServer) GetFeeds(ctx context.Context, request mcp.CallToolReque
 func (s *MinifluxServer) GetEntries(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args := request.Params.Arguments
 
-	// Parse optional parameters
 	var filter *client.Filter
 	if args != nil {
-		argsMap, ok := args.(map[string]interface{})
-		if ok {
-			filter = &client.Filter{}
-
-			if statusStr, ok := argsMap["status"].(string); ok {
-				filter.Status = statusStr
-			}
-
-			if feedIDFloat, ok := argsMap["feed_id"].(float64); ok {
-				feedID := int64(feedIDFloat)
-				filter.FeedID = feedID
-			}
-
-			if limitFloat, ok := argsMap["limit"].(float64); ok {
-				limit := int(limitFloat)
-				filter.Limit = limit
-			}
-
-			if offsetFloat, ok := argsMap["offset"].(float64); ok {
-				offset := int(offsetFloat)
-				filter.Offset = offset
+		if argsMap, ok := args.(map[string]interface{}); ok {
+			var err error
+			filter, err = buildEntriesFilter(argsMap)
+			if err != nil {
+				return mcp.NewToolResultError(err.Error()), nil
 			}
 		}
 	}

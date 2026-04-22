@@ -217,13 +217,14 @@ func (s *MinifluxServer) RegisterAllTools(mcpServer *server.MCPServer) {
 		{
 			Tool: mcp.Tool{
 				Name:        "get_entries",
-				Description: "Get entries (articles) from Miniflux with optional filtering",
+				Description: "Get entries (articles) from Miniflux with optional filtering and sorting",
 				InputSchema: mcp.ToolInputSchema{
 					Type: "object",
 					Properties: map[string]interface{}{
 						"status": map[string]interface{}{
 							"type":        "string",
 							"description": "Filter by entry status (read, unread, removed)",
+							"enum":        []string{"read", "unread", "removed"},
 						},
 						"feed_id": map[string]interface{}{
 							"type":        "number",
@@ -231,11 +232,41 @@ func (s *MinifluxServer) RegisterAllTools(mcpServer *server.MCPServer) {
 						},
 						"limit": map[string]interface{}{
 							"type":        "number",
-							"description": "Limit the number of entries returned",
+							"description": "Maximum number of entries to return",
 						},
 						"offset": map[string]interface{}{
 							"type":        "number",
-							"description": "Offset for pagination",
+							"description": "Number of entries to skip (for pagination)",
+						},
+						"direction": map[string]interface{}{
+							"type":        "string",
+							"description": "Sort direction: asc (oldest first) or desc (newest first)",
+							"enum":        []string{"asc", "desc"},
+						},
+						"order": map[string]interface{}{
+							"type":        "string",
+							"description": "Field to sort by",
+							"enum":        []string{"id", "status", "published_at", "category_title", "category_id"},
+						},
+						"published_after": map[string]interface{}{
+							"type":        "string",
+							"description": "Return entries published after this time (RFC3339, e.g. 2026-04-22T00:00:00+09:00)",
+						},
+						"published_before": map[string]interface{}{
+							"type":        "string",
+							"description": "Return entries published before this time (RFC3339, e.g. 2026-04-22T23:59:59+09:00)",
+						},
+						"category_id": map[string]interface{}{
+							"type":        "number",
+							"description": "Filter by category ID",
+						},
+						"search": map[string]interface{}{
+							"type":        "string",
+							"description": "Full-text search query (PostgreSQL plainto_tsquery)",
+						},
+						"starred": map[string]interface{}{
+							"type":        "boolean",
+							"description": "If true, return only starred (bookmarked) entries",
 						},
 					},
 				},
