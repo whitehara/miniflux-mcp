@@ -654,8 +654,9 @@ func main() {
 		server.WithLogging(),
 	)
 
-	// Register all tools
+	// Register all tools and prompts
 	minifluxServer.RegisterAllTools(s)
+	RegisterAllPrompts(s)
 
 	if err := runServer(s); err != nil {
 		log.Fatalf("Server failed: %v", err)
