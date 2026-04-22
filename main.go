@@ -633,9 +633,21 @@ func (s *MinifluxServer) RefreshCategory(ctx context.Context, request mcp.CallTo
 	return mcp.NewToolResultText(fmt.Sprintf("Category %d refreshed successfully", categoryID)), nil
 }
 
+// runServer starts the MCP server in HTTP mode if MCP_HTTP_PORT is set,
+// otherwise falls back to stdio. Returns an error instead of calling log.Fatal
+// so callers (including tests) can handle it.
+func runServer(s *server.MCPServer) error {
+	if port := os.Getenv("MCP_HTTP_PORT"); port != "" {
+		log.Printf("Starting MCP server in Streamable HTTP mode on :%s (endpoint: /mcp)", port)
+		httpServer := server.NewStreamableHTTPServer(s)
+		return httpServer.Start(":" + port)
+	}
+	log.Printf("Starting MCP server in stdio mode")
+	return server.ServeStdio(s)
+}
+
 func main() {
 	minifluxServer := NewMinifluxServer()
-
 	s := server.NewMCPServer(
 		"miniflux-mcp",
 		"0.1.0",
@@ -645,7 +657,7 @@ func main() {
 	// Register all tools
 	minifluxServer.RegisterAllTools(s)
 
-	if err := server.ServeStdio(s); err != nil {
+	if err := runServer(s); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
